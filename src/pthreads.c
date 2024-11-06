@@ -12,6 +12,7 @@
 /* POSIX headers */
 #include <pthread.h>
 #include <unistd.h>
+#include <sched.h>
 
 /* Futex-specific headers */
 #if PTHREADPOOL_USE_FUTEX
@@ -289,6 +290,13 @@ struct pthreadpool* pthreadpool_create(size_t threads_count) {
 		wait_worker_threads(threadpool);
 	}
 	return threadpool;
+}
+
+int pthreadpool_set_affinity(pthreadpool_t threadpool, size_t idx, cpu_set_t* cores) {
+	if (threadpool) {
+		return pthread_setaffinity_np(threadpool->threads[idx].thread_object, sizeof(cpu_set_t), cores);
+	}
+	return -1;
 }
 
 PTHREADPOOL_INTERNAL void pthreadpool_parallelize(

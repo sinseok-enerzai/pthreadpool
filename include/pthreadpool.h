@@ -93,6 +93,21 @@ pthreadpool_t pthreadpool_create(size_t threads_count);
  */
 size_t pthreadpool_get_threads_count(pthreadpool_t threadpool);
 
+typedef struct cpu_set_t cpu_set_t;
+
+/**
+ * Query the number of threads in a thread pool.
+ *
+ * @param  threadpool  the thread pool to query.
+ * 
+ * @param  idx  thread index.
+ * 
+ * @param  cores  core affinity.
+ *
+ * @returns  The number of threads in the thread pool.
+ */
+int pthreadpool_set_affinity(pthreadpool_t threadpool, size_t idx, cpu_set_t* cores);
+
 /**
  * Process items on a 1D grid.
  *
