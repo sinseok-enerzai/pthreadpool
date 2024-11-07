@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sched.h>
 
 typedef struct pthreadpool* pthreadpool_t;
 
@@ -92,8 +93,6 @@ pthreadpool_t pthreadpool_create(size_t threads_count);
  * @returns  The number of threads in the thread pool.
  */
 size_t pthreadpool_get_threads_count(pthreadpool_t threadpool);
-
-typedef struct cpu_set_t cpu_set_t;
 
 /**
  * Query the number of threads in a thread pool.

@@ -12,7 +12,6 @@
 /* POSIX headers */
 #include <pthread.h>
 #include <unistd.h>
-#include <sched.h>
 
 /* Futex-specific headers */
 #if PTHREADPOOL_USE_FUTEX
