@@ -290,12 +290,13 @@ struct pthreadpool* pthreadpool_create(size_t threads_count) {
 	}
 	return threadpool;
 }
+#include <sched.h>
 
-int pthreadpool_set_affinity(pthreadpool_t threadpool, size_t idx, cpu_set_t* cores) {
+unsigned long int pthreadpool_get_thread(pthreadpool_t threadpool, size_t idx) {
 	if (threadpool) {
-		return pthread_setaffinity_np(threadpool->threads[idx].thread_object, sizeof(cpu_set_t), cores);
+    return threadpool->threads[idx].thread_object;
 	}
-	return -1;
+	return 0;
 }
 
 PTHREADPOOL_INTERNAL void pthreadpool_parallelize(

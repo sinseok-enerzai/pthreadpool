@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <sched.h>
 
 typedef struct pthreadpool* pthreadpool_t;
 
@@ -105,7 +104,7 @@ size_t pthreadpool_get_threads_count(pthreadpool_t threadpool);
  *
  * @returns  The number of threads in the thread pool.
  */
-int pthreadpool_set_affinity(pthreadpool_t threadpool, size_t idx, cpu_set_t* cores);
+unsigned long int pthreadpool_get_thread(pthreadpool_t threadpool, size_t idx);
 
 /**
  * Process items on a 1D grid.
