@@ -37,6 +37,14 @@ typedef void (*pthreadpool_task_4d_tile_2d_with_id_t)(void*, uint32_t, size_t, s
 typedef void (*pthreadpool_task_2d_tile_1d_with_id_with_thread_t)(void*, uint32_t, size_t, size_t, size_t, size_t);
 typedef void (*pthreadpool_task_3d_tile_1d_with_id_with_thread_t)(void*, uint32_t, size_t, size_t, size_t, size_t, size_t);
 
+typedef struct {
+	char name[16];
+	size_t threads_count;
+	size_t cores_size;
+	int* cores;
+	int nice;
+} pthreadpool_attribute;
+
 
 /**
  * Disable support for denormalized numbers to the maximum extent possible for
@@ -82,7 +90,7 @@ extern "C" {
  * @returns  A pointer to an opaque thread pool object if the call is
  *    successful, or NULL pointer if the call failed.
  */
-pthreadpool_t pthreadpool_create(size_t threads_count, int nice);
+pthreadpool_t pthreadpool_create(pthreadpool_attribute* attribute);
 
 /**
  * Query the number of threads in a thread pool.

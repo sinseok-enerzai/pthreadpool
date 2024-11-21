@@ -63,12 +63,18 @@ struct PTHREADPOOL_CACHELINE_ALIGNED thread_info {
 	 * Thread number in the 0..threads_count-1 range.
 	 */
 	size_t thread_number;
+
+	size_t cores_size;
+
+	int nice;
 	/**
 	 * Thread pool which owns the thread.
 	 */
 	struct pthreadpool* threadpool;
 
-	int nice;
+	int* cores;
+	char* name;
+
 #if PTHREADPOOL_USE_CONDVAR || PTHREADPOOL_USE_FUTEX
 	/**
 	 * The pthread object corresponding to the thread.

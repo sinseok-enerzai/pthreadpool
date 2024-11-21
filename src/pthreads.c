@@ -182,6 +182,7 @@ static uint32_t wait_for_new_command(
 #include <errno.h>
 #include <unistd.h>
 #include <sys/resource.h>
+#include <sched.h>
 
 static void* thread_main(void* arg) {
 	struct thread_info* thread = (struct thread_info*) arg;
@@ -194,6 +195,17 @@ static void* thread_main(void* arg) {
   errno = 0;
   if (nice(thread->nice - CurrentNice) == -1 && errno != 0) {
   }
+
+  cpu_set_t affinity;
+	for (size_t i = 0; i < thread->cores_size; ++i) {
+		CPU_SET(thread->cores[i], &affinity);
+	}
+
+	__pid_t tid = pthread_gettid_np(pthread_self());
+	if (sched_setaffinity(tid, sizeof(cpu_set_t), &affinity) < 0) {
+	}
+
+	pthread_setname_np(pthread_self(), thread->name);
 
 	/* Check in */
 	checkin_worker_thread(threadpool);
@@ -236,14 +248,16 @@ static void* thread_main(void* arg) {
 	};
 }
 
-struct pthreadpool* pthreadpool_create(size_t threads_count, int nice) {
+struct pthreadpool* pthreadpool_create(pthreadpool_attribute* attribute) {
 	#if PTHREADPOOL_USE_CPUINFO
 		if (!cpuinfo_initialize()) {
 			return NULL;
 		}
 	#endif
 
-	if (threads_count == 0) {
+	size_t threads_count = attribute->threads_count;
+
+	if (attribute->threads_count == 0) {
 		#if PTHREADPOOL_USE_CPUINFO
 			threads_count = cpuinfo_get_processors_count();
 		#elif defined(_SC_NPROCESSORS_ONLN)
@@ -272,7 +286,10 @@ struct pthreadpool* pthreadpool_create(size_t threads_count, int nice) {
 	for (size_t tid = 0; tid < threads_count; tid++) {
 		threadpool->threads[tid].thread_number = tid;
 		threadpool->threads[tid].threadpool = threadpool;
-		threadpool->threads[tid].nice = nice;
+		threadpool->threads[tid].nice = attribute->nice;
+		threadpool->threads[tid].cores = attribute->cores;
+		threadpool->threads[tid].cores_size = attribute->cores_size;
+		threadpool->threads[tid].name = attribute->name;
 	}
 
 	/* Thread pool with a single thread computes everything on the caller thread. */
@@ -460,6 +477,7 @@ void pthreadpool_destroy(struct pthreadpool* threadpool) {
 			/* Wait until all threads return */
 			for (size_t thread = 1; thread < threads_count; thread++) {
 				pthread_join(threadpool->threads[thread].thread_object, NULL);
+				threadpool->threads[thread].cores = NULL;
 			}
 
 			/* Release resources */
