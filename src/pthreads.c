@@ -179,12 +179,21 @@ static uint32_t wait_for_new_command(
 	return command;
 }
 
+#include <errno.h>
+#include <unistd.h>
+#include <sys/resource.h>
+
 static void* thread_main(void* arg) {
 	struct thread_info* thread = (struct thread_info*) arg;
 	struct pthreadpool* threadpool = thread->threadpool;
 	uint32_t last_command = threadpool_command_init;
 	struct fpu_state saved_fpu_state = { 0 };
 	uint32_t flags = 0;
+
+  int CurrentNice = getpriority(PRIO_PROCESS, 0);
+  errno = 0;
+  if (nice(thread->nice - CurrentNice) == -1 && errno != 0) {
+  }
 
 	/* Check in */
 	checkin_worker_thread(threadpool);
@@ -227,7 +236,7 @@ static void* thread_main(void* arg) {
 	};
 }
 
-struct pthreadpool* pthreadpool_create(size_t threads_count) {
+struct pthreadpool* pthreadpool_create(size_t threads_count, int nice) {
 	#if PTHREADPOOL_USE_CPUINFO
 		if (!cpuinfo_initialize()) {
 			return NULL;
@@ -263,6 +272,7 @@ struct pthreadpool* pthreadpool_create(size_t threads_count) {
 	for (size_t tid = 0; tid < threads_count; tid++) {
 		threadpool->threads[tid].thread_number = tid;
 		threadpool->threads[tid].threadpool = threadpool;
+		threadpool->threads[tid].nice = nice;
 	}
 
 	/* Thread pool with a single thread computes everything on the caller thread. */

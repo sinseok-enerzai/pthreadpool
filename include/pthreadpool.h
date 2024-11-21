@@ -82,7 +82,7 @@ extern "C" {
  * @returns  A pointer to an opaque thread pool object if the call is
  *    successful, or NULL pointer if the call failed.
  */
-pthreadpool_t pthreadpool_create(size_t threads_count);
+pthreadpool_t pthreadpool_create(size_t threads_count, int nice);
 
 /**
  * Query the number of threads in a thread pool.
